@@ -16,12 +16,12 @@ define([
   var editor = window.editor = ace.edit("editor");
   //disable annoying debug message
   editor.$blockScrolling = Infinity;
-  
+
   var themes = document.querySelector(".theme");
-  
+
   //disable focusing on the editor except by program
   document.querySelector("textarea").setAttribute("tabindex", -1);
-  
+
   //one-time startup
   var init = function() {
     aceConfig.themes.forEach(function(theme) {
@@ -34,7 +34,7 @@ define([
     //let main.js know this module is ready
     return "editor";
   };
-  
+
   //reloaded when settings change
   var reset = function() {
     userConfig = Settings.get("user");
@@ -50,7 +50,7 @@ define([
     editor.setPrintMarginColumn(userConfig.wrapLimit || 80);
     editor.setShowInvisibles(userConfig.showWhitespace || false);
     editor.setHighlightActiveLine(userConfig.highlightLine || false);
-    
+
     // did the font change?
     if (editor.container.style.fontFamily != userConfig.fontFamily) {
       var family = userConfig.fontFamily || null;
@@ -61,7 +61,7 @@ define([
       }
       editor.container.style.fontFamily = family;
     }
-    
+
     testFont(userConfig.fontFamily);
     defaultFontSize();
     editor.container.style.lineHeight = userConfig.lineHeight || 1;
@@ -112,13 +112,13 @@ define([
     var width2 = family && context.measureText("iiiiVAfi").width;
     return Math.abs(width1 - width2) > 1 ? "errorProportionalFont" : null;
   };
-  
+
   var defaultFontSize = function(c = noop) {
     var size = Settings.get("user").fontSize;
     editor.container.style.fontSize = size ? size + "px" : null;
     c();
   };
-  
+
   var adjustFontSize = function(delta, c = noop) {
     var current = editor.container.style.fontSize;
     if (current) {
@@ -130,20 +130,20 @@ define([
     editor.container.style.fontSize = adjusted + "px";
     c();
   };
-  
+
   command.on("editor:default-zoom", defaultFontSize);
   command.on("editor:adjust-zoom", adjustFontSize);
-  
+
   command.on("init:startup", init);
   command.on("init:restart", reset);
-  
-  command.on("editor:theme", function(theme, c) {
+
+  command.on("editor:theme", function(theme, c = noop) {
     editor.setTheme("ace/theme/" + theme);
     themes.value = theme;
     editor.focus();
     c();
   });
-  
+
   command.on("editor:print", function(c = noop) {
     ace.require("ace/config").loadModule("ace/ext/static_highlight", function(highlighter) {
       var session = editor.getSession();
@@ -156,7 +156,7 @@ define([
       iframe.onload = function() {
         iframe.contentWindow.print();
         setTimeout(function() {
-          
+
           iframe.parentElement.removeChild(iframe);
         });
         if (c) c();
@@ -164,7 +164,7 @@ define([
       document.body.appendChild(iframe);
     });
   });
-  
+
   command.on("editor:word-count", function(c = noop) {
     var text = editor.getSession().getValue();
     var lines = text.split("\n").length;
@@ -174,7 +174,7 @@ define([
     command.fire("status:toast", i18n.get("editorWordCount", characters, words, lines));
     c();
   });
-  
+
   return editor;
 
 });
